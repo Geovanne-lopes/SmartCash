@@ -13,12 +13,10 @@ import java.util.Optional;
 public class DespesaService {
 
     @Autowired
-    private DespesaService despesaService;
-    @Autowired
     private DespesaRepository despesaRepository;
 
     public Despesa salvar(Despesa despesa) {
-        return despesaService.salvar(despesa);
+        return despesaRepository.save(despesa);
     }
 
     public Despesa buscarPorId(long id) {

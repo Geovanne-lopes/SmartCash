@@ -27,8 +27,6 @@ public class Receita {
     @Column(length = 100, nullable = false)
     private String categoria;
 
-    private boolean recebido; // recebido ou nao
-
 
     public Long getId() {
         return id;
@@ -70,12 +68,5 @@ public class Receita {
     }
     public void setCategoria(String categoria) {
         this.categoria = categoria;
-    }
-
-    public boolean isRecebido() {
-        return recebido;
-    }
-    public void setRecebido(boolean recebido) {
-        this.recebido = recebido;
     }
 }

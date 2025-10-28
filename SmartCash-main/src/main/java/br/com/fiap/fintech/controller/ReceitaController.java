@@ -28,7 +28,7 @@ public class ReceitaController {
         return receitaService.salvar(receita);
     }
 
-    @GetMapping("/{id}")
+    @GetMapping
     @ResponseStatus(HttpStatus.OK)
     public List<Receita> buscarTodos(){
         return receitaService.buscarTodos();

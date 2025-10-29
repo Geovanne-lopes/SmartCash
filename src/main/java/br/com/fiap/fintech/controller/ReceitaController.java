@@ -11,6 +11,8 @@ import br.com.fiap.fintech.model.Receita;
 import java.util.Optional;
 import java.util.List;
 
+//VAMOS VER SE ESTA FUNCIONANDO
+
 @RestController
 @RequestMapping("/api/receita")
 public class ReceitaController {
@@ -36,7 +38,7 @@ public class ReceitaController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Receita buscarPorId(long id){
+    public Receita buscarPorId(@PathVariable long id){
         return receitaService.buscarPorId(id);
     }
 

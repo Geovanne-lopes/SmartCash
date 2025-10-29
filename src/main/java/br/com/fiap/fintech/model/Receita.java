@@ -13,18 +13,19 @@ public class Receita {
     @Column(name = "id_receita")
     private long id;
 
-    @Column(length = 100, nullable = false)
+    @Column(length = 100, nullable = false, name = "nm_receita")
     private String nome;
 
-    @Column(length = 100, nullable = false)
+    @Column(length = 100, nullable = false, name = "ds_receita")
     private String descricao;
 
+    @Column(name = "vl_receita")
     private double valor;
 
     @Column(name = "dt_receita")
     private LocalDate data;
 
-    @Column(length = 100, nullable = false)
+    @Column(length = 100, nullable = false, name = "cat_receita")
     private String categoria;
 
 

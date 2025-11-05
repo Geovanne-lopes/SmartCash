@@ -54,21 +54,32 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
     };
 
     try {
-      // 🔹 Envia os dados para o backend Java (ajuste a rota conforme o backend dele)
-      const response = await fetch("http://localhost:8080/api/despesa", {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify(novaTransacao),
-      });
+      let response;
+
+      if (activeTab === "despesas") {
+        response = await fetch("http://localhost:8080/api/despesa", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(novaTransacao),
+        });
+      } else {
+        response = await fetch("http://localhost:8080/api/receita", {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify(novaTransacao),
+        });
+      }
 
       if (!response.ok) {
         throw new Error(`Erro ao salvar: ${response.status}`);
       }
 
       const saved = await response.json();
-      console.log("✅ Resposta do servidor:", saved);
+      console.log("Resposta do servidor:", saved);
 
       // Atualiza o histórico local (caso exista)
       if (onAddTransaction) {

@@ -4,8 +4,8 @@ import Smc from "./assets/smcash.svg";
 
 // Importar componentes
 import EditarPerfil from "./components/EditarPerfil";
-import Despesas from "./components/Despesas";
-import Receitas from "./components/Receitas";
+import Despesas from "./components/Transacoes";
+import Home from "./components/Home";
 import ErrorScreen from "./components/ErrorScreen";
 
 export default function App() {
@@ -46,7 +46,7 @@ export default function App() {
   // Se estiver nas telas internas (após login), renderizar componente específico
   if (currentScreen === "home") {
     return (
-      <Receitas
+      <Home
         userName={userName}
         onNavigate={handleNavigate}
         onAddTransaction={handleRegisterTransactionCallback}

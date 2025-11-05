@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
+import { Trash2 } from "lucide-react"; // Ícone moderno de lixeira
 import FooterPanel from "./FooterPanel";
 
 export default function Home({ onNavigate }) {
@@ -46,6 +47,35 @@ export default function Home({ onNavigate }) {
     carregarTransacoes();
   }, []);
 
+  // ✅ Excluir transação
+  const excluirTransacao = async (id, tipo) => {
+    const confirmar = window.confirm(
+      "Tem certeza que deseja excluir esta transação?"
+    );
+    if (!confirmar) return;
+
+    try {
+      const endpoint =
+        tipo === "Receita"
+          ? `http://localhost:8080/api/receita/${id}`
+          : `http://localhost:8080/api/despesa/${id}`;
+
+      const response = await fetch(endpoint, { method: "DELETE" });
+
+      if (!response.ok) throw new Error("Erro ao excluir transação");
+
+      setHistorico((prev) => prev.filter((item) => item.id !== id));
+    } catch (error) {
+      console.error("Erro ao excluir:", error);
+      alert("Erro ao excluir transação. Tente novamente.");
+    }
+  };
+
+  // ✅ Ir para tela de edição
+  const editarTransacao = (id, tipo) => {
+    onNavigate("editarTransacao", { id, tipo });
+  };
+
   // ✅ Cálculos
   const receitas = historico
     .filter((item) => item.tipo === "Receita")
@@ -67,7 +97,7 @@ export default function Home({ onNavigate }) {
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
-    return date.toLocaleDateString("pt-BR");
+    return isNaN(date) ? "Data Inválida" : date.toLocaleDateString("pt-BR");
   };
 
   // ✅ Estados de carregamento e erro
@@ -105,7 +135,7 @@ export default function Home({ onNavigate }) {
 
           {/* 🔹 Saldo da Conta */}
           <div className="bg-gray-800 rounded-2xl p-8 shadow-lg text-center border border-gray-700/50">
-            <h3 className="text-gray-300 text-sm tracking-wide uppercase mb-2 font-extrabold tracking-tight">
+            <h3 className="text-gray-300 text-sm tracking-wide uppercase mb-2 font-extrabold">
               Saldo da Conta
             </h3>
             <p
@@ -156,7 +186,7 @@ export default function Home({ onNavigate }) {
                 </p>
                 <p className="text-gray-500 text-sm mt-2">
                   Adicione despesas ou receitas para começar a acompanhar seu
-                  histórico financeiro.
+                  histórico.
                 </p>
               </div>
             ) : (
@@ -176,6 +206,7 @@ export default function Home({ onNavigate }) {
                       <th className="py-3 px-4 text-left text-sm font-semibold text-gray-300">
                         Data
                       </th>
+                      <th className="py-3 px-4 text-center"></th>
                     </tr>
                   </thead>
                   <tbody>
@@ -205,8 +236,39 @@ export default function Home({ onNavigate }) {
                         >
                           {formatCurrency(item.valor)}
                         </td>
-                        <td className="py-3 px-4 text-gray-400">
+                        <td className="py-3 px-4 text-gray-400 whitespace-nowrap">
                           {formatDate(item.data)}
+                        </td>
+                        <td className="py-3 px-4 text-center flex justify-center gap-2">
+                          {/* ✏️ Botão de editar */}
+                          <button
+                            onClick={() => editarTransacao(item.id, item.tipo)}
+                            className="p-2 rounded-full hover:bg-blue-600/20 text-blue-400 hover:text-blue-500 transition-colors"
+                            title="Editar transação"
+                          >
+                            <svg
+                              xmlns="http://www.w3.org/2000/svg"
+                              className="w-4 h-4"
+                              viewBox="0 0 24 24"
+                              fill="none"
+                              stroke="currentColor"
+                              strokeWidth={2}
+                              strokeLinecap="round"
+                              strokeLinejoin="round"
+                            >
+                              <path d="M12 20h9" />
+                              <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z" />
+                            </svg>
+                          </button>
+
+                          {/* 🗑️ Botão de excluir */}
+                          <button
+                            onClick={() => excluirTransacao(item.id, item.tipo)}
+                            className="p-2 rounded-full hover:bg-red-600/20 text-red-400 hover:text-red-500 transition-colors"
+                            title="Excluir transação"
+                          >
+                            <Trash2 size={18} />
+                          </button>
                         </td>
                       </tr>
                     ))}

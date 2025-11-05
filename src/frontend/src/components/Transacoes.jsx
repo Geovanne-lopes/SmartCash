@@ -3,9 +3,12 @@ import PropTypes from "prop-types";
 import FooterPanel from "./FooterPanel";
 import InputField from "./InputField";
 import SaveCancelButtons from "./SaveCancelButtons";
+import Toast from "./Toast";
+import { motion } from "framer-motion";
+import { ArrowDownCircle, ArrowUpCircle } from "lucide-react";
 
 export default function Despesas({ onNavigate, onAddTransaction }) {
-  const [activeTab, setActiveTab] = useState("despesas"); // "despesas" ou "receitas"
+  const [activeTab, setActiveTab] = useState("despesas");
   const [formData, setFormData] = useState({
     titulo: "",
     descricao: "",
@@ -13,8 +16,13 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
     vencimento: "",
     categoria: "",
   });
+  const [toast, setToast] = useState(null);
 
-  // Limpar formulário quando mudar de aba
+  const showToast = (type, message) => {
+    setToast({ type, message });
+    setTimeout(() => setToast(null), 3000);
+  };
+
   useEffect(() => {
     setFormData({
       titulo: "",
@@ -29,15 +37,12 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
     setFormData({ ...formData, [field]: e.target.value });
   };
 
-  const handleTabChange = (tab) => {
-    setActiveTab(tab);
-  };
-
   const handleSave = async () => {
-    // Validação dos campos obrigatórios
     if (!formData.titulo || !formData.valor || !formData.vencimento) {
-      if (onNavigate) onNavigate("error");
-      alert("Preencha Título, Valor e Vencimento antes de salvar.");
+      showToast(
+        "warning",
+        "Preencha Título, Valor e Vencimento antes de salvar."
+      );
       return;
     }
 
@@ -54,34 +59,21 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
     };
 
     try {
-      let response;
+      const endpoint =
+        activeTab === "despesas"
+          ? "http://localhost:8080/api/despesa"
+          : "http://localhost:8080/api/receita";
 
-      if (activeTab === "despesas") {
-        response = await fetch("http://localhost:8080/api/despesa", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(novaTransacao),
-        });
-      } else {
-        response = await fetch("http://localhost:8080/api/receita", {
-          method: "POST",
-          headers: {
-            "Content-Type": "application/json",
-          },
-          body: JSON.stringify(novaTransacao),
-        });
-      }
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(novaTransacao),
+      });
 
-      if (!response.ok) {
-        throw new Error(`Erro ao salvar: ${response.status}`);
-      }
+      if (!response.ok) throw new Error(`Erro ao salvar: ${response.status}`);
 
       const saved = await response.json();
-      console.log("Resposta do servidor:", saved);
 
-      // Atualiza o histórico local (caso exista)
       if (onAddTransaction) {
         onAddTransaction({
           id: saved.id || Date.now(),
@@ -92,9 +84,11 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
         });
       }
 
-      alert(
+      showToast(
+        "success",
         `${activeTab === "despesas" ? "Despesa" : "Receita"} salva com sucesso!`
       );
+
       setFormData({
         titulo: "",
         descricao: "",
@@ -102,11 +96,13 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
         vencimento: "",
         categoria: "",
       });
+
+      setTimeout(() => {
+        if (onNavigate) onNavigate("home");
+      }, 1000);
     } catch (error) {
       console.error("❌ Erro ao salvar:", error);
-      alert(
-        "Erro ao salvar no servidor. Verifique o console para mais detalhes."
-      );
+      showToast("error", "Erro ao salvar no servidor. Verifique o console.");
     }
   };
 
@@ -118,43 +114,71 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
       vencimento: "",
       categoria: "",
     });
+    if (onNavigate) onNavigate("home");
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-900 dark:bg-gray-900 pb-20">
-      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
-        <div className="max-w-2xl mx-auto w-full">
-          {/* Alternância entre Despesas e Receitas */}
-          <div className="mb-4 sm:mb-6 flex justify-center">
-            <div className="inline-flex rounded-lg bg-gray-800 dark:bg-gray-800 p-1">
-              <button
-                onClick={() => handleTabChange("despesas")}
-                className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
-                  activeTab === "despesas"
-                    ? "bg-indigo-500 text-white"
-                    : "text-gray-300 dark:text-gray-300 hover:text-white"
-                }`}
-              >
-                Despesas
-              </button>
-              <button
-                onClick={() => handleTabChange("receitas")}
-                className={`px-3 sm:px-4 py-2 rounded-md text-xs sm:text-sm font-medium transition-colors ${
-                  activeTab === "receitas"
-                    ? "bg-indigo-500 text-white"
-                    : "text-gray-300 dark:text-gray-300 hover:text-white"
-                }`}
-              >
-                Receitas
-              </button>
-            </div>
+    <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-950 via-gray-900 to-gray-800 pb-24">
+      {toast && (
+        <Toast
+          type={toast.type}
+          message={toast.message}
+          onClose={() => setToast(null)}
+        />
+      )}
+
+      <main className="flex-1 px-6 py-10 flex justify-center items-start">
+        <motion.div
+          initial={{ opacity: 0, y: 30 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.6, ease: "easeOut" }}
+          className="max-w-2xl w-full bg-gray-900/70 backdrop-blur-md border border-gray-700 rounded-3xl shadow-[0_8px_40px_-15px_rgba(0,0,0,0.8)] p-10"
+        >
+          {/* Tabs separadas visualmente */}
+          <div className="flex justify-center mb-10 gap-6">
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setActiveTab("despesas")}
+              className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-base transition-all shadow-md border ${
+                {
+                  despesas:
+                    activeTab === "despesas"
+                      ? "bg-red-600 text-white border-red-500"
+                      : "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700",
+                }["despesas"]
+              }`}
+            >
+              <ArrowDownCircle className="w-5 h-5" />
+              Despesas
+            </motion.button>
+
+            <motion.button
+              whileHover={{ scale: 1.05 }}
+              whileTap={{ scale: 0.95 }}
+              onClick={() => setActiveTab("receitas")}
+              className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-base transition-all shadow-md border ${
+                {
+                  receitas:
+                    activeTab === "receitas"
+                      ? "bg-green-600 text-white border-green-500"
+                      : "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700",
+                }["receitas"]
+              }`}
+            >
+              <ArrowUpCircle className="w-5 h-5" />
+              Receitas
+            </motion.button>
           </div>
 
-          <h2 className="text-xl sm:text-2xl font-bold text-white dark:text-white mb-4 sm:mb-6">
-            {activeTab === "despesas" ? "Despesas" : "Receitas"}
+          <h2 className="text-4xl font-bold text-white text-center mb-8 drop-shadow-md">
+            {activeTab === "despesas" ? "Nova Despesa" : "Nova Receita"}
           </h2>
 
-          <div className="bg-gray-800 dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-lg space-y-4">
+          <motion.div
+            layout
+            className="space-y-5 bg-gray-800/60 p-8 rounded-2xl border border-gray-700 shadow-lg backdrop-blur-sm"
+          >
             <InputField
               label="Título"
               placeholder="Exemplo: Conta de luz"
@@ -172,23 +196,24 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
               onChange={handleChange("descricao")}
             />
 
-            <InputField
-              label="Valor"
-              placeholder="Exemplo: R$ 150,00"
-              type="text"
-              value={formData.valor}
-              onChange={handleChange("valor")}
-              required
-            />
+            <div className="grid sm:grid-cols-2 gap-6">
+              <InputField
+                label="Valor"
+                placeholder="R$ 150,00"
+                type="number"
+                value={formData.valor}
+                onChange={handleChange("valor")}
+                required
+              />
 
-            <InputField
-              label="Vencimento"
-              placeholder="Exemplo: 2024-01-15"
-              type="date"
-              value={formData.vencimento}
-              onChange={handleChange("vencimento")}
-              required
-            />
+              <InputField
+                label="Vencimento"
+                type="date"
+                value={formData.vencimento}
+                onChange={handleChange("vencimento")}
+                required
+              />
+            </div>
 
             <InputField
               label="Categoria"
@@ -198,11 +223,11 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
               onChange={handleChange("categoria")}
             />
 
-            <div className="flex flex-col gap-3 mt-6">
+            <div className="mt-8 flex justify-center">
               <SaveCancelButtons onSave={handleSave} onCancel={handleCancel} />
             </div>
-          </div>
-        </div>
+          </motion.div>
+        </motion.div>
       </main>
 
       <FooterPanel currentScreen="despesas" onNavigate={onNavigate} />

@@ -1,6 +1,5 @@
 package br.com.fiap.fintech.model;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotBlank;
@@ -18,7 +17,6 @@ public class Usuario {
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_USUARIO")
     @Column(name = "ID_USUARIO")
-    @JsonIgnore
     private Long id;
 
     @Email

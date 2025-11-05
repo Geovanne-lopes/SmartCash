@@ -57,8 +57,8 @@ export default function App() {
 
       setCurrentScreen("home"); // vai pra tela principal
     } catch (error) {
-      console.error(error);
-      alert("Falha no login. Verifique seu e-mail e senha.", error);
+      console.error("Erro no login:", error);
+      alert(error.message || "Falha no login. Verifique seu e-mail e senha.");
     }
   };
 
@@ -77,28 +77,42 @@ export default function App() {
       return;
     }
 
-    try {
-      const response = await fetch("http://localhost:8080/api/usuarios", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ nome, email, senha }),
-      });
+   try {
+    const response = await fetch("http://localhost:8080/api/usuarios", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ nome, email, senha }),
+    });
 
-      if (!response.ok) {
-        throw new Error("Erro ao cadastrar usuário: " + response.status);
+    // Lê o corpo da resposta (texto ou JSON)
+    const responseText = await response.text();
+    console.log("Status:", response.status);
+    console.log("Resposta completa:", responseText);
+
+    if (!response.ok) {
+      // Tenta extrair a mensagem de erro retornada pelo backend
+      let errorMessage = "Erro ao cadastrar usuário.";
+      try {
+        const errorData = JSON.parse(responseText);
+        errorMessage = errorData.message || errorMessage;
+      } catch {
+        // Se não for JSON, usa o texto puro
+        errorMessage = responseText || errorMessage;
       }
-
-      const data = await response.json();
-      console.log("Usuário cadastrado com sucesso:", data);
-
-      // Se o backend retorna o usuário criado, podemos usar o nome retornado
-      setUserName(data.nome || nome);
-      setCurrentScreen("home");
-    } catch (error) {
-      console.error(error);
-      alert("Falha ao cadastrar usuário. Tente novamente.");
+      throw new Error(errorMessage);
     }
-  };
+
+    const data = JSON.parse(responseText);
+    console.log("Usuário cadastrado com sucesso:", data);
+
+    setUserName(data.nome || nome);
+    setCurrentScreen("home");
+  } catch (error) {
+    console.error("Erro capturado:", error);
+    alert(error.message || "Falha ao cadastrar usuário. Tente novamente.");
+  }
+  }
+
 
 
   // Se estiver nas telas internas (após login), renderizar componente específico

@@ -3,7 +3,9 @@ package br.com.fiap.fintech.controller;
 import br.com.fiap.fintech.model.Usuario;
 import br.com.fiap.fintech.service.UsuarioService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -18,9 +20,26 @@ public class UsuarioController {
 
     //Metodo responsável por criar um novo produto no BD
     @PostMapping
-    @ResponseStatus(HttpStatus.CREATED)
-    public Usuario salvar (@RequestBody Usuario usuario) {
-        return usuarioService.salvar(usuario);
+    public ResponseEntity<?> salvar(@RequestBody Usuario usuario) {
+        try {
+            Usuario novoUsuario = usuarioService.salvar(usuario);
+            return ResponseEntity.status(HttpStatus.CREATED).body(novoUsuario);
+
+        } catch (DataIntegrityViolationException e) {
+            // Ex: e-mail já cadastrado no banco
+            return ResponseEntity.status(HttpStatus.CONFLICT)
+                    .body(Map.of("message", "Já existe um usuário com este e-mail."));
+
+        } catch (IllegalArgumentException e) {
+            // Ex: dados inválidos enviados
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(Map.of("message", e.getMessage()));
+
+        } catch (Exception e) {
+            // Qualquer outro erro inesperado
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Map.of("message", "Erro interno ao cadastrar usuário: " + e.getMessage()));
+        }
     }
 
     @GetMapping("/{id}")

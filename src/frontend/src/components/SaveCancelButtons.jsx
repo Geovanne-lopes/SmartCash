@@ -13,7 +13,7 @@ export default function SaveCancelButtons({ onSave, onCancel }) {
         onClick={onCancel}
         className="flex-1 bg-red-600 hover:bg-red-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors duration-200"
       >
-        Limpar
+        Cancelar
       </button>
     </div>
   );

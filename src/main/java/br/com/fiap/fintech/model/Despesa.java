@@ -13,21 +13,21 @@ public class Despesa {
     @Column(name = "id_despesa")
     private long id;
 
-    @Column(length = 100, nullable = false)
-    private int nome;
+    @Column(length = 100, nullable = false, name = "nm_despesa")
+    private String nome;
 
-    @Column(length = 100, nullable = false)
+    @Column(length = 100, nullable = false, name = "ds_despesa")
     private String descricao;
 
+    @Column(name = "vl_despesa")
     private double valor;
 
     @Column(name = "dt_despesa")
     private LocalDate data;
 
-    @Column(length = 100, nullable = false)
+    @Column(length = 100, nullable = false, name = "cat_despesa")
     private String categoria;
 
-    private boolean paga; // foi pago?
 
     public long getId() {
         return id;
@@ -36,10 +36,10 @@ public class Despesa {
         this.id = id;
     }
 
-    public int getNome() {
+    public String getNome() {
         return nome;
     }
-    public void setNome(int nome) {
+    public void setNome(String nome) {
         this.nome = nome;
     }
 
@@ -69,12 +69,5 @@ public class Despesa {
     }
     public void setCategoria(String categoria) {
         this.categoria = categoria;
-    }
-
-    public boolean isPaga() {
-        return paga;
-    }
-    public void setPaga(boolean paga) {
-        this.paga = paga;
     }
 }

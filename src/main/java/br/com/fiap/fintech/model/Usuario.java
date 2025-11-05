@@ -25,6 +25,14 @@ public class Usuario {
     @Column(name = "ds_hash_senha", nullable = false)
     private String senhaHash;
 
+    @NotBlank
+    @Column(name= "nm_usuario", nullable = false)
+    private String nome;
+
+    public String getNome() { return nome;}
+
+    public void setNome(String nome) { this.nome = nome; }
+
     public long getId() {
         return id;
     }

@@ -19,6 +19,7 @@ public class Despesa {
     @Column(length = 100, nullable = false)
     private String descricao;
 
+    @Column(name = "vl_despesa")
     private double valor;
 
     @Column(name = "dt_despesa")
@@ -26,8 +27,6 @@ public class Despesa {
 
     @Column(length = 100, nullable = false)
     private String categoria;
-
-    private boolean paga; // foi pago?
 
     public long getId() {
         return id;
@@ -69,12 +68,5 @@ public class Despesa {
     }
     public void setCategoria(String categoria) {
         this.categoria = categoria;
-    }
-
-    public boolean isPaga() {
-        return paga;
-    }
-    public void setPaga(boolean paga) {
-        this.paga = paga;
     }
 }

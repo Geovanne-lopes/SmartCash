@@ -35,7 +35,7 @@ public class DespesaController {
 
     @GetMapping("/{id}")
     @ResponseStatus(HttpStatus.OK)
-    public Despesa buscarPorId(long id) {
+    public Despesa buscarPorId(@PathVariable long id) {
         return despesaService.buscarPorId(id);
     }
 

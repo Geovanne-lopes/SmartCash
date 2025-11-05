@@ -3,7 +3,6 @@ import PropTypes from "prop-types";
 import FooterPanel from "./FooterPanel";
 import InputField from "./InputField";
 import SaveCancelButtons from "./SaveCancelButtons";
-import HomeButton from "./HomeButton";
 
 export default function EditarPerfil({
   userName,
@@ -37,12 +36,12 @@ export default function EditarPerfil({
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gray-900 pb-20">
-      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8">
-        <div className="max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold text-white mb-6">Editar Perfil</h2>
+    <div className="min-h-screen flex flex-col bg-gray-900 dark:bg-gray-900 pb-20">
+      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
+        <div className="max-w-2xl mx-auto w-full">
+          <h2 className="text-xl sm:text-2xl font-bold text-white dark:text-white mb-4 sm:mb-6">Editar Perfil</h2>
 
-          <div className="bg-gray-800 rounded-lg p-6 shadow-lg space-y-4">
+          <div className="bg-gray-800 dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-lg space-y-4">
             <InputField
               label="Nome"
               placeholder="Digite seu nome"
@@ -70,8 +69,6 @@ export default function EditarPerfil({
             />
 
             <SaveCancelButtons onSave={handleSave} onCancel={handleCancel} />
-
-            <HomeButton onNavigate={onNavigate} />
           </div>
         </div>
       </main>

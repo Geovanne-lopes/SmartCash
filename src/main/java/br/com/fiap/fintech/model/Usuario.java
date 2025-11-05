@@ -8,39 +8,55 @@ import jakarta.validation.constraints.Size;
 
 @Entity
 @Table(name = "T_SMC_USUARIO")
+@SequenceGenerator(
+        name = "SEQ_USUARIO",
+        sequenceName = "SEQ_USUARIO",
+        allocationSize = 1
+)
 public class Usuario {
 
     @Id
-    @JsonIgnore
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "SEQ_USUARIO")
-    @SequenceGenerator(name = "SEQ_USUARIO", sequenceName = "SEQ_USUARIO", allocationSize = 1)
-    @Column(name = "id_usuario")
-    private long id;
+    @Column(name = "ID_USUARIO")
+    @JsonIgnore
+    private Long id;
 
     @Email
-    @NotBlank
-    @Column(name= "ds_email", nullable = false, unique = true)
+    @NotBlank(message = "O e-mail é obrigatório")
+    @Column(name = "DS_EMAIL", nullable = false, unique = true, length = 100)
     private String email;
 
-    @NotBlank
+    @NotBlank(message = "A senha é obrigatória")
     @Size(min = 8, message = "A senha deve conter pelo menos 8 caracteres")
-    @Column(name = "ds_hash_senha", nullable = false)
+    @Column(name = "DS_HASH_SENHA", nullable = false, length = 255)
     private String senhaHash;
 
-    @NotBlank
-    @Column(name= "nm_usuario", nullable = false)
+    @NotBlank(message = "O nome é obrigatório")
+    @Column(name = "NM_USUARIO", nullable = false, length = 100)
     private String nome;
 
-    public String getNome() { return nome;}
+    public Usuario() {}
 
-    public void setNome(String nome) { this.nome = nome; }
+    public Usuario(String nome, String email, String senhaHash) {
+        this.nome = nome;
+        this.email = email;
+        this.senhaHash = senhaHash;
+    }
 
-    public long getId() {
+    public Long getId() {
         return id;
     }
 
-    public void setId(long id) {
+    public void setId(Long id) {
         this.id = id;
+    }
+
+    public String getNome() {
+        return nome;
+    }
+
+    public void setNome(String nome) {
+        this.nome = nome;
     }
 
     public String getEmail() {

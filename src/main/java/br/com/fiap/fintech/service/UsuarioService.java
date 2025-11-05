@@ -1,5 +1,7 @@
 package br.com.fiap.fintech.service;
 
+import br.com.fiap.fintech.dto.LoginRequest;
+import br.com.fiap.fintech.dto.LoginResponse;
 import br.com.fiap.fintech.exception.EmailJaCadastradoException;
 import br.com.fiap.fintech.model.Usuario;
 import br.com.fiap.fintech.repository.UsuarioRepository;
@@ -49,5 +51,15 @@ public class UsuarioService {
         }
         usuario.setId(id);
         return usuarioRepository.save(usuario);
+    }
+
+    public LoginResponse autenticar(LoginRequest loginRequest) {
+        Usuario usuario = usuarioRepository.findByEmail(loginRequest.getEmail());
+
+        if(!usuario.getSenhaHash().equals(loginRequest.getSenha())) {
+            throw new RuntimeException("Senha Incorreta!");
+        }
+
+        return new LoginResponse(usuario.getId(), usuario.getNome(), usuario.getEmail());
     }
 }

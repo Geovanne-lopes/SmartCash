@@ -9,6 +9,7 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
+import java.util.Map;
 
 @RestController
 @RequestMapping("/api/usuarios")
@@ -18,7 +19,6 @@ public class UsuarioController {
     @Autowired
     private UsuarioService usuarioService;
 
-    //Metodo responsável por criar um novo produto no BD
     @PostMapping
     public ResponseEntity<?> salvar(@RequestBody Usuario usuario) {
         try {
@@ -26,17 +26,14 @@ public class UsuarioController {
             return ResponseEntity.status(HttpStatus.CREATED).body(novoUsuario);
 
         } catch (DataIntegrityViolationException e) {
-            // Ex: e-mail já cadastrado no banco
             return ResponseEntity.status(HttpStatus.CONFLICT)
                     .body(Map.of("message", "Já existe um usuário com este e-mail."));
 
         } catch (IllegalArgumentException e) {
-            // Ex: dados inválidos enviados
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(Map.of("message", e.getMessage()));
 
         } catch (Exception e) {
-            // Qualquer outro erro inesperado
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Map.of("message", "Erro interno ao cadastrar usuário: " + e.getMessage()));
         }

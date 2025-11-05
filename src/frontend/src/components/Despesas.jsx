@@ -31,47 +31,89 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
 
   const handleTabChange = (tab) => {
     setActiveTab(tab);
-    // O useEffect já limpa o formulário quando activeTab muda
   };
 
-  const handleSave = () => {
-    // Validar apenas os campos que vão para o histórico: título, valor e vencimento
+  const handleSave = async () => {
+    // Validação dos campos obrigatórios
     if (!formData.titulo || !formData.valor || !formData.vencimento) {
       if (onNavigate) onNavigate("error");
+      alert("Preencha Título, Valor e Vencimento antes de salvar.");
       return;
     }
 
-    // Criar transação usando apenas título, valor e vencimento
     const valor = parseFloat(formData.valor) || 0;
-    const valorFinal = activeTab === "despesas" ? -Math.abs(valor) : Math.abs(valor);
-    
+    const valorFinal =
+      activeTab === "despesas" ? -Math.abs(valor) : Math.abs(valor);
+
     const novaTransacao = {
-      id: Date.now(),
-      tipo: activeTab === "despesas" ? "Despesa" : "Receita",
-      descricao: formData.titulo, // Usar título como descrição no histórico
-      valor: valorFinal, // Negativo para despesas, positivo para receitas
+      nome: formData.titulo,
+      descricao: formData.descricao,
+      valor: valorFinal,
       data: formData.vencimento,
+      categoria: formData.categoria,
     };
 
-    // Adicionar ao histórico via callback
-    if (onAddTransaction) {
-      onAddTransaction(novaTransacao);
-    }
+    try {
+      // 🔹 Envia os dados para o backend Java (ajuste a rota conforme o backend dele)
+      const response = await fetch("http://localhost:8080/api/despesa", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify(novaTransacao),
+      });
 
-    console.log("Salvando:", activeTab, formData);
-    alert(`${activeTab === "despesas" ? "Despesa" : "Receita"} salva com sucesso!`);
-    setFormData({ titulo: "", descricao: "", valor: "", vencimento: "", categoria: "" });
+      if (!response.ok) {
+        throw new Error(`Erro ao salvar: ${response.status}`);
+      }
+
+      const saved = await response.json();
+      console.log("✅ Resposta do servidor:", saved);
+
+      // Atualiza o histórico local (caso exista)
+      if (onAddTransaction) {
+        onAddTransaction({
+          id: saved.id || Date.now(),
+          descricao: saved.titulo,
+          valor: saved.valor,
+          data: saved.vencimento,
+          tipo: saved.tipo,
+        });
+      }
+
+      alert(
+        `${activeTab === "despesas" ? "Despesa" : "Receita"} salva com sucesso!`
+      );
+      setFormData({
+        titulo: "",
+        descricao: "",
+        valor: "",
+        vencimento: "",
+        categoria: "",
+      });
+    } catch (error) {
+      console.error("❌ Erro ao salvar:", error);
+      alert(
+        "Erro ao salvar no servidor. Verifique o console para mais detalhes."
+      );
+    }
   };
 
   const handleCancel = () => {
-    setFormData({ titulo: "", descricao: "", valor: "", vencimento: "", categoria: "" });
+    setFormData({
+      titulo: "",
+      descricao: "",
+      valor: "",
+      vencimento: "",
+      categoria: "",
+    });
   };
 
   return (
     <div className="min-h-screen flex flex-col bg-gray-900 dark:bg-gray-900 pb-20">
       <main className="flex-1 px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
         <div className="max-w-2xl mx-auto w-full">
-          {/* Botão de transição acima do título */}
+          {/* Alternância entre Despesas e Receitas */}
           <div className="mb-4 sm:mb-6 flex justify-center">
             <div className="inline-flex rounded-lg bg-gray-800 dark:bg-gray-800 p-1">
               <button

@@ -19,13 +19,13 @@ export default function Receitas({ onNavigate, onAddTransaction }) {
   const receitas = historico
     .filter((item) => item.tipo === "Receita")
     .reduce((sum, item) => sum + item.valor, 0);
-  
+
   const despesas = Math.abs(
     historico
       .filter((item) => item.tipo === "Despesa")
       .reduce((sum, item) => sum + item.valor, 0)
   );
-  
+
   const saldoConta = receitas - despesas;
 
   const formatCurrency = (value) => {
@@ -51,7 +51,9 @@ export default function Receitas({ onNavigate, onAddTransaction }) {
           {/* Valor da Conta */}
           <div className="bg-gradient-to-r from-blue-600 to-indigo-600 rounded-lg p-4 sm:p-6 shadow-lg mb-4 sm:mb-6">
             <div className="text-center">
-              <p className="text-gray-200 dark:text-gray-200 text-xs sm:text-sm mb-2">Saldo da Conta</p>
+              <p className="text-gray-200 dark:text-gray-200 text-xs sm:text-sm mb-2">
+                Saldo da Conta
+              </p>
               <p className="text-2xl sm:text-3xl lg:text-4xl font-bold text-white dark:text-white">
                 {formatCurrency(saldoConta)}
               </p>
@@ -61,13 +63,17 @@ export default function Receitas({ onNavigate, onAddTransaction }) {
           {/* Receita | Despesa */}
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 sm:gap-4 mb-4 sm:mb-6">
             <div className="bg-green-600 dark:bg-green-600 rounded-lg p-4 sm:p-5 shadow-lg">
-              <p className="text-gray-100 dark:text-gray-100 text-xs sm:text-sm mb-1">Receitas</p>
+              <p className="text-gray-100 dark:text-gray-100 text-xs sm:text-sm mb-1">
+                Receitas
+              </p>
               <p className="text-xl sm:text-2xl font-bold text-white dark:text-white">
                 {formatCurrency(receitas)}
               </p>
             </div>
             <div className="bg-red-600 dark:bg-red-600 rounded-lg p-4 sm:p-5 shadow-lg">
-              <p className="text-gray-100 dark:text-gray-100 text-xs sm:text-sm mb-1">Despesas</p>
+              <p className="text-gray-100 dark:text-gray-100 text-xs sm:text-sm mb-1">
+                Despesas
+              </p>
               <p className="text-xl sm:text-2xl font-bold text-white dark:text-white">
                 {formatCurrency(despesas)}
               </p>
@@ -76,15 +82,18 @@ export default function Receitas({ onNavigate, onAddTransaction }) {
 
           {/* Tabela de Histórico */}
           <div className="bg-gray-800 dark:bg-gray-800 rounded-lg p-4 sm:p-6 shadow-lg mb-6">
-            <h3 className="text-lg sm:text-xl font-semibold text-white dark:text-white mb-3 sm:mb-4">Histórico</h3>
-            
+            <h3 className="text-lg sm:text-xl font-semibold text-white dark:text-white mb-3 sm:mb-4">
+              Histórico
+            </h3>
+
             {historico.length === 0 ? (
               <div className="text-center py-8 sm:py-12">
                 <p className="text-gray-400 dark:text-gray-400 text-sm sm:text-base">
                   Nenhuma transação registrada ainda.
                 </p>
                 <p className="text-gray-500 dark:text-gray-500 text-xs sm:text-sm mt-2">
-                  Adicione despesas ou receitas para começar a acompanhar seu histórico financeiro.
+                  Adicione despesas ou receitas para começar a acompanhar seu
+                  histórico financeiro.
                 </p>
               </div>
             ) : (
@@ -108,14 +117,20 @@ export default function Receitas({ onNavigate, onAddTransaction }) {
                         </span>
                         <span
                           className={`text-xs font-semibold ${
-                            item.valor > 0 ? "text-green-400 dark:text-green-400" : "text-red-400 dark:text-red-400"
+                            item.valor > 0
+                              ? "text-green-400 dark:text-green-400"
+                              : "text-red-400 dark:text-red-400"
                           }`}
                         >
                           {formatCurrency(item.valor)}
                         </span>
                       </div>
-                      <p className="text-white dark:text-white text-sm font-medium mb-1">{item.descricao}</p>
-                      <p className="text-gray-400 dark:text-gray-400 text-xs">{formatDate(item.data)}</p>
+                      <p className="text-white dark:text-white text-sm font-medium mb-1">
+                        {item.descricao}
+                      </p>
+                      <p className="text-gray-400 dark:text-gray-400 text-xs">
+                        {formatDate(item.data)}
+                      </p>
                     </div>
                   ))}
                 </div>
@@ -157,10 +172,14 @@ export default function Receitas({ onNavigate, onAddTransaction }) {
                                 {item.tipo}
                               </span>
                             </td>
-                            <td className="py-3 px-4 text-white dark:text-white text-sm">{item.descricao}</td>
+                            <td className="py-3 px-4 text-white dark:text-white text-sm">
+                              {item.descricao}
+                            </td>
                             <td
                               className={`py-3 px-4 text-right font-semibold text-sm ${
-                                item.valor > 0 ? "text-green-400 dark:text-green-400" : "text-red-400 dark:text-red-400"
+                                item.valor > 0
+                                  ? "text-green-400 dark:text-green-400"
+                                  : "text-red-400 dark:text-red-400"
                               }`}
                             >
                               {formatCurrency(item.valor)}
@@ -177,7 +196,6 @@ export default function Receitas({ onNavigate, onAddTransaction }) {
               </>
             )}
           </div>
-
         </div>
       </main>
 

@@ -30,18 +30,76 @@ export default function App() {
     setAddTransactionCallback(() => callback);
   };
 
-  // Handler para login - quando o usuário clica em "Entrar"
-  const handleLogin = (e) => {
+  // Handler para login - envia dados ao backend
+  const handleLogin = async (e) => {
     e.preventDefault();
-    setCurrentScreen("home");
+
+    const email = e.target.email.value;
+    const senha = e.target.password.value;
+
+    try {
+      const response = await fetch("http://localhost:8080/api/usuarios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ email, senha }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro ao fazer login: " + response.status);
+      }
+
+      const data = await response.json();
+      console.log("Usuário logado:", data);
+
+      // Se a API retorna nome ou token, salve aqui
+      setUserName(data.nome || email); // usa nome retornado ou o e-mail
+      // localStorage.setItem("token", data.token); // se o backend tiver JWT
+
+      setCurrentScreen("home"); // vai pra tela principal
+    } catch (error) {
+      console.error(error);
+      alert("Falha no login. Verifique seu e-mail e senha.", error);
+    }
   };
 
+
   // Handler para cadastro
-  const handleSignup = (e) => {
+  const handleSignup = async (e) => {
     e.preventDefault();
-    // Aqui você pode adicionar lógica de cadastro
-    setCurrentScreen("home");
+
+    const nome = e.target[0].value;     // primeiro input do form
+    const email = e.target[1].value;    // segundo input
+    const senha = e.target[2].value;    // terceiro input
+    const confirmarSenha = e.target[3].value; // quarto input
+
+    if (senha !== confirmarSenha) {
+      alert("As senhas não coincidem!");
+      return;
+    }
+
+    try {
+      const response = await fetch("http://localhost:8080/api/usuarios", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ nome, email, senha }),
+      });
+
+      if (!response.ok) {
+        throw new Error("Erro ao cadastrar usuário: " + response.status);
+      }
+
+      const data = await response.json();
+      console.log("Usuário cadastrado com sucesso:", data);
+
+      // Se o backend retorna o usuário criado, podemos usar o nome retornado
+      setUserName(data.nome || nome);
+      setCurrentScreen("home");
+    } catch (error) {
+      console.error(error);
+      alert("Falha ao cadastrar usuário. Tente novamente.");
+    }
   };
+
 
   // Se estiver nas telas internas (após login), renderizar componente específico
   if (currentScreen === "home") {

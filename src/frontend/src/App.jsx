@@ -38,7 +38,7 @@ export default function App() {
     const senha = e.target.password.value;
 
     try {
-      const response = await fetch("http://localhost:8080/api/usuarios", {
+      const response = await fetch("http://localhost:8080/api/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, senha }),
@@ -58,7 +58,7 @@ export default function App() {
       setCurrentScreen("home"); // vai pra tela principal
     } catch (error) {
       console.error("Erro no login:", error);
-      alert(error.message || "Falha no login. Verifique seu e-mail e senha.");
+      alert("Falha no login. \nVerifique seu e-mail e senha.");
     }
   };
 
@@ -69,10 +69,10 @@ export default function App() {
 
     const nome = e.target[0].value;     // primeiro input do form
     const email = e.target[1].value;    // segundo input
-    const senha = e.target[2].value;    // terceiro input
+    const senhaHash = e.target[2].value;    // terceiro input
     const confirmarSenha = e.target[3].value; // quarto input
 
-    if (senha !== confirmarSenha) {
+    if (senhaHash !== confirmarSenha) {
       alert("As senhas não coincidem!");
       return;
     }
@@ -81,7 +81,7 @@ export default function App() {
     const response = await fetch("http://localhost:8080/api/usuarios", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ nome, email, senha }),
+      body: JSON.stringify({ nome, email, senhaHash }),
     });
 
     // Lê o corpo da resposta (texto ou JSON)

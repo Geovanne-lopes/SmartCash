@@ -1,5 +1,6 @@
 package br.com.fiap.fintech.model;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.time.LocalDate;
@@ -8,6 +9,7 @@ import java.time.LocalDate;
 @Table(name = "T_SMC_RECEITA")
 public class Receita {
     @Id
+    @JsonIgnore
     @GeneratedValue(strategy = GenerationType.IDENTITY, generator = "SEQ_RECEITA")
     @SequenceGenerator(name = "SEQ_RECEITA", sequenceName = "SEQ_RECEITA", allocationSize = 1)
     @Column(name = "id_receita")

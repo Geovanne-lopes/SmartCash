@@ -27,13 +27,11 @@ export default function EditarTransacao({ onNavigate, transacaoSelecionada }) {
   const [saving, setSaving] = useState(false);
   const [toast, setToast] = useState(null);
 
-  // ✅ Toast elegante
   const showToast = (type, message) => {
     setToast({ type, message });
     setTimeout(() => setToast(null), 3000);
   };
 
-  // 🔹 Carrega dados da transação
   useEffect(() => {
     if (!id || !tipo) {
       setError("Transação inválida");
@@ -72,14 +70,12 @@ export default function EditarTransacao({ onNavigate, transacaoSelecionada }) {
     carregar();
   }, [id, tipo]);
 
-  // 🔹 Atualiza campos
   const handleChange = (e) => {
     const { name, value } = e.target;
     if (name === "data" && value.length > 10) return;
     setForm((prev) => ({ ...prev, [name]: value }));
   };
 
-  // 🔹 Salvar alterações
   const handleSubmit = async (e) => {
     e.preventDefault();
     setSaving(true);
@@ -134,7 +130,6 @@ export default function EditarTransacao({ onNavigate, transacaoSelecionada }) {
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      {/* 🔔 Toast */}
       <AnimatePresence>
         {toast && (
           <motion.div
@@ -158,7 +153,6 @@ export default function EditarTransacao({ onNavigate, transacaoSelecionada }) {
         )}
       </AnimatePresence>
 
-      {/* 🧾 Card principal */}
       <motion.div
         initial={{ y: 40, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
@@ -169,7 +163,6 @@ export default function EditarTransacao({ onNavigate, transacaoSelecionada }) {
             : "border-red-500/50 shadow-[0_0_30px_rgba(239,68,68,0.25)]"
         } bg-gray-900/70`}
       >
-        {/* ✨ Glow radial de fundo */}
         <div
           className={`absolute inset-0 rounded-3xl blur-3xl opacity-15 pointer-events-none ${
             isReceita
@@ -178,7 +171,6 @@ export default function EditarTransacao({ onNavigate, transacaoSelecionada }) {
           }`}
         />
 
-        {/* ✨ Linha de brilho inferior */}
         <div
           className={`absolute bottom-0 left-0 w-full h-[2px] rounded-b-3xl pointer-events-none ${
             isReceita
@@ -187,14 +179,11 @@ export default function EditarTransacao({ onNavigate, transacaoSelecionada }) {
           }`}
         />
 
-        {/* Conteúdo */}
         <div className="relative z-10">
           <div className="flex flex-col items-center mb-6">
             <motion.div
               className={`p-4 rounded-full border ${
-                isReceita
-                  ? "border-green-400/30"
-                  : "border-red-400/30"
+                isReceita ? "border-green-400/30" : "border-red-400/30"
               } mb-3 shadow-[0_0_20px_rgba(0,0,0,0.4)]`}
               animate={{
                 y: [0, -4, 0],
@@ -255,7 +244,6 @@ export default function EditarTransacao({ onNavigate, transacaoSelecionada }) {
             </p>
           </div>
 
-          {/* Formulário */}
           <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="block text-sm text-gray-300 mb-1">Nome *</label>
@@ -331,7 +319,6 @@ export default function EditarTransacao({ onNavigate, transacaoSelecionada }) {
               />
             </div>
 
-            {/* Botões */}
             <div className="flex justify-center gap-6 pt-6">
               <button
                 type="submit"

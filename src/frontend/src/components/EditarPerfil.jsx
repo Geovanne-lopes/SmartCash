@@ -2,11 +2,14 @@ import { useState } from "react";
 import PropTypes from "prop-types";
 import { motion, AnimatePresence } from "framer-motion";
 import { User, CheckCircle, XCircle } from "lucide-react";
-import FooterPanel from "./FooterPanel";
 import InputField from "./InputField";
 import SaveCancelButtons from "./SaveCancelButtons";
 
-export default function EditarPerfil({ userName, onNavigate, onUpdateUserName }) {
+export default function EditarPerfil({
+  userName,
+  onNavigate,
+  onUpdateUserName,
+}) {
   const [formData, setFormData] = useState({
     nome: userName || "",
     email: "",
@@ -54,16 +57,19 @@ export default function EditarPerfil({ userName, onNavigate, onUpdateUserName })
     try {
       const usuarioId = JSON.parse(localStorage.getItem("user"))?.id || 1;
 
-      const response = await fetch(`http://localhost:8080/api/usuarios/${usuarioId}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          id: usuarioId,
-          email: formData.email,
-          senhaHash: formData.senha,
-          nome: formData.nome,
-        }),
-      });
+      const response = await fetch(
+        `http://localhost:8080/api/usuarios/${usuarioId}`,
+        {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            id: usuarioId,
+            email: formData.email,
+            senhaHash: formData.senha,
+            nome: formData.nome,
+          }),
+        }
+      );
 
       if (!response.ok) throw new Error("Erro ao atualizar perfil.");
 

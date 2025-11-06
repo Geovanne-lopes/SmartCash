@@ -1,19 +1,32 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useMemo } from "react";
 import PropTypes from "prop-types";
-import { Trash2 } from "lucide-react"; // Ícone moderno de lixeira
+import { Trash2 } from "lucide-react";
+import { motion } from "framer-motion";
+import {
+  AreaChart,
+  Area,
+  ResponsiveContainer,
+  Tooltip,
+  XAxis,
+  YAxis,
+} from "recharts";
 import FooterPanel from "./FooterPanel";
 
-export default function Home({ onNavigate }) {
+/**
+ * Home - Dashboard financeiro melhorado
+ * - Cards com glow
+ * - Mini gráfico de evolução (Recharts)
+ * - Tabela de histórico com animações sutis
+ */
+
+export default function Home({ onNavigate, onLogout }) {
   const [historico, setHistorico] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
-  // ✅ Busca receitas e despesas do backend
   const carregarTransacoes = async () => {
     try {
       setLoading(true);
-      setError(null);
-
       const [resReceitas, resDespesas] = await Promise.all([
         fetch("http://localhost:8080/api/receita"),
         fetch("http://localhost:8080/api/despesa"),
@@ -36,7 +49,7 @@ export default function Home({ onNavigate }) {
 
       setHistorico(historicoCompleto);
     } catch (err) {
-      console.error("❌ Erro ao carregar transações:", err);
+      console.error(err);
       setError("Erro ao buscar dados do servidor.");
     } finally {
       setLoading(false);
@@ -47,11 +60,61 @@ export default function Home({ onNavigate }) {
     carregarTransacoes();
   }, []);
 
-  // ✅ Excluir transação
+  // cálculos
+  const receitas = useMemo(
+    () =>
+      historico
+        .filter((i) => i.tipo === "Receita")
+        .reduce((s, i) => s + (Number(i.valor) || 0), 0),
+    [historico]
+  );
+
+  const despesas = useMemo(
+    () =>
+      Math.abs(
+        historico
+          .filter((i) => i.tipo === "Despesa")
+          .reduce((s, i) => s + (Number(i.valor) || 0), 0)
+      ),
+    [historico]
+  );
+
+  const saldoConta = receitas - despesas;
+
+  // ✅ Corrigido para exibir R$ -1.540.000,00
+  const formatCurrency = (v) => {
+    if (v == null || isNaN(v)) return "R$ 0,00";
+
+    const isNegative = v < 0;
+    const formatted = new Intl.NumberFormat("pt-BR", {
+      style: "currency",
+      currency: "BRL",
+      minimumFractionDigits: 2,
+      maximumFractionDigits: 2,
+    }).format(Math.abs(v));
+
+    return isNegative ? `R$ -${formatted.replace("R$", "").trim()}` : formatted;
+  };
+
+  const formatDate = (dateString) => {
+    const d = new Date(dateString);
+    return isNaN(d) ? "--/--/----" : d.toLocaleDateString("pt-BR");
+  };
+
+  // fake data para mini-gráfico (pode substituir por endpoint real)
+  const chartData = useMemo(() => {
+    const base = new Array(8).fill(0).map((_, i) => {
+      const val =
+        i === 7
+          ? saldoConta
+          : Math.round((saldoConta / 8) * (i + 1) + (Math.random() - 0.4) * 200);
+      return { name: `D-${8 - i}`, saldo: val };
+    });
+    return base;
+  }, [saldoConta]);
+
   const excluirTransacao = async (id, tipo) => {
-    const confirmar = window.confirm(
-      "Tem certeza que deseja excluir esta transação?"
-    );
+    const confirmar = window.confirm("Deseja realmente excluir esta transação?");
     if (!confirmar) return;
 
     try {
@@ -61,230 +124,200 @@ export default function Home({ onNavigate }) {
           : `http://localhost:8080/api/despesa/${id}`;
 
       const response = await fetch(endpoint, { method: "DELETE" });
-
-      if (!response.ok) throw new Error("Erro ao excluir transação");
-
+      if (!response.ok) throw new Error("Erro ao excluir");
       setHistorico((prev) => prev.filter((item) => item.id !== id));
-    } catch (error) {
-      console.error("Erro ao excluir:", error);
-      alert("Erro ao excluir transação. Tente novamente.");
+    } catch (err) {
+      console.error(err);
+      alert("Erro ao excluir transação.");
     }
   };
 
-  // ✅ Ir para tela de edição
   const editarTransacao = (id, tipo) => {
-    onNavigate("editarTransacao", { id, tipo });
+    onNavigate && onNavigate("editarTransacao", { id, tipo });
   };
 
-  // ✅ Cálculos
-  const receitas = historico
-    .filter((item) => item.tipo === "Receita")
-    .reduce((sum, item) => sum + item.valor, 0);
-
-  const despesas = Math.abs(
-    historico
-      .filter((item) => item.tipo === "Despesa")
-      .reduce((sum, item) => sum + item.valor, 0)
-  );
-
-  const saldoConta = receitas - despesas;
-
-  const formatCurrency = (value) =>
-    new Intl.NumberFormat("pt-BR", {
-      style: "currency",
-      currency: "BRL",
-    }).format(value);
-
-  const formatDate = (dateString) => {
-    const date = new Date(dateString);
-    return isNaN(date) ? "Data Inválida" : date.toLocaleDateString("pt-BR");
-  };
-
-  // ✅ Estados de carregamento e erro
-  if (loading) {
+  if (loading)
     return (
-      <div className="min-h-screen flex flex-col bg-gray-900 text-white items-center justify-center">
-        <p className="text-lg animate-pulse">Carregando dados financeiros...</p>
+      <div className="min-h-screen bg-gradient-to-b from-gray-950 to-gray-900 flex items-center justify-center text-gray-300">
+        <div className="animate-pulse">Carregando visão financeira...</div>
       </div>
     );
-  }
 
-  if (error) {
+  if (error)
     return (
-      <div className="min-h-screen flex flex-col bg-gray-900 text-red-400 items-center justify-center">
-        <p>{error}</p>
+      <div className="min-h-screen flex items-center justify-center text-red-400 bg-gray-950">
+        {error}
       </div>
     );
-  }
 
-  // ✅ Interface principal
   return (
-    <div className="min-h-screen flex flex-col bg-gray-900 pb-20">
-      <main className="flex-1 px-4 sm:px-6 lg:px-8 py-8 sm:py-12">
-        <div className="max-w-4xl mx-auto w-full space-y-6">
-          {/* 🔹 Cabeçalho */}
-          <div className="text-center mb-8">
-            <h2 className="text-3xl sm:text-4xl font-extrabold text-white tracking-tight">
+    <motion.div
+      className="min-h-screen flex flex-col bg-gradient-to-b from-gray-950 to-gray-900 text-gray-100 pb-24"
+      initial={{ opacity: 0 }}
+      animate={{ opacity: 1 }}
+      transition={{ duration: 0.6 }}
+    >
+      <main className="flex-1 px-6 lg:px-12 py-8">
+        <div className="max-w-6xl mx-auto space-y-8">
+          {/* Header */}
+          <div className="text-center">
+            <h1 className="text-4xl md:text-5xl font-extrabold bg-clip-text text-transparent bg-gradient-to-r from-teal-300 to-green-400 drop-shadow-lg">
               Visão Financeira
-            </h2>
-            <p className="text-gray-400 mt-2 text-sm sm:text-base">
-              Acompanhe suas receitas, despesas e o saldo da sua conta em tempo
-              real.
+            </h1>
+            <p className="mt-2 text-sm text-gray-400">
+              Acompanhe receitas, despesas e o saldo em tempo real.
             </p>
           </div>
 
-          {/* 🔹 Saldo da Conta */}
-          <div className="bg-gray-800 rounded-2xl p-8 shadow-lg text-center border border-gray-700/50">
-            <h3 className="text-gray-300 text-sm tracking-wide uppercase mb-2 font-extrabold">
-              Saldo da Conta
-            </h3>
-            <p
-              className={`text-5xl sm:text-6xl font-extrabold ${
-                saldoConta > 0
-                  ? "text-green-400"
-                  : saldoConta < 0
-                  ? "text-red-400"
-                  : "text-gray-200"
-              } transition-colors duration-300`}
+          {/* Top: saldo + mini-gráfico */}
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 items-stretch">
+            <motion.div
+              whileHover={{ y: -6 }}
+              className="lg:col-span-2 relative bg-gray-800/70 backdrop-blur-md rounded-2xl p-6 shadow-2xl border border-gray-800 overflow-hidden"
             >
-              R${" "}
-              {saldoConta < 0
-                ? `-${formatCurrency(Math.abs(saldoConta))
-                    .replace("R$", "")
-                    .trim()}`
-                : `${formatCurrency(saldoConta).replace("R$", "").trim()}`}
-            </p>
+              {/* glow decorativo */}
+              <div className="absolute -inset-1 blur-3xl opacity-20 pointer-events-none" style={{ background: "linear-gradient(90deg, rgba(16,185,129,0.06), rgba(59,130,246,0.06))" }} />
+
+              <div className="flex items-center justify-between">
+                <div>
+                  <div className="text-xs uppercase text-gray-300 tracking-wider">Saldo da conta</div>
+                  <div
+                    className={`mt-2 text-4xl md:text-5xl font-extrabold ${saldoConta > 0 ? "text-teal-400" : saldoConta < 0 ? "text-rose-400" : "text-gray-200"
+                      }`}
+                  >
+                    {formatCurrency(saldoConta)}
+                  </div>
+                  <div className="mt-2 text-sm text-gray-400">Saldo disponível e último fechamento</div>
+                </div>
+
+                <div className="w-48 h-24 md:w-64 md:h-28">
+                  <ResponsiveContainer width="100%" height="100%">
+                    <AreaChart data={chartData}>
+                      <defs>
+                        <linearGradient id="g1" x1="0" y1="0" x2="0" y2="1">
+                          <stop offset="0%" stopColor="#7C3AED" stopOpacity={0.9} />
+                          <stop offset="100%" stopColor="#60A5FA" stopOpacity={0.05} />
+                        </linearGradient>
+                      </defs>
+                      <XAxis dataKey="name" hide />
+                      <YAxis hide domain={["auto", "auto"]} />
+                      <Tooltip
+                        contentStyle={{ background: "#0f1724", border: "none", color: "#fff" }}
+                        itemStyle={{ color: "#fff" }}
+                        labelFormatter={() => ""}
+                        formatter={(value) => formatCurrency(value)}
+                      />
+                      <Area type="monotone" dataKey="saldo" stroke="#7C3AED" fill="url(#g1)" strokeWidth={2} />
+                    </AreaChart>
+                  </ResponsiveContainer>
+                </div>
+              </div>
+            </motion.div>
+
+            {/* Cards resumo */}
+            <div className="grid grid-cols-2 gap-4">
+              {/* Receitas */}
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                className="bg-gradient-to-br from-emerald-500 to-green-500 rounded-2xl p-4 shadow-lg flex flex-col items-center justify-center text-center"
+              >
+                <div className="text-sm text-white/90">Receitas</div>
+                <div className="mt-2 text-2xl font-bold text-white break-words">{formatCurrency(receitas)}</div>
+                <div className="mt-4 text-xs text-white/80">Últimos registros</div>
+              </motion.div>
+
+              {/* Despesas */}
+              <motion.div
+                whileHover={{ scale: 1.03 }}
+                className="bg-gradient-to-br from-rose-500 to-pink-500 rounded-2xl p-4 shadow-lg flex flex-col items-center justify-center text-center"
+              >
+                <div className="text-sm text-white/90">Despesas</div>
+                <div className="mt-2 text-2xl font-bold text-white break-words">{formatCurrency(despesas)}</div>
+                <div className="mt-4 text-xs text-white/80">Últimos registros</div>
+              </motion.div>
+            </div>
           </div>
 
-          {/* 🔹 Cards de Receitas e Despesas */}
-          <div className="grid grid-cols-1 sm:grid-cols-2 gap-5">
-            <div className="rounded-2xl bg-gradient-to-br from-green-500/90 to-green-600 p-6 shadow-md hover:scale-[1.02] transition-transform duration-300">
-              <p className="text-white/80 text-sm mb-1 font-medium">Receitas</p>
-              <p className="text-2xl sm:text-3xl font-bold text-white">
-                {formatCurrency(receitas)}
-              </p>
-            </div>
-
-            <div className="rounded-2xl bg-gradient-to-br from-red-500/90 to-red-600 p-6 shadow-md hover:scale-[1.02] transition-transform duration-300">
-              <p className="text-white/80 text-sm mb-1 font-medium">Despesas</p>
-              <p className="text-2xl sm:text-3xl font-bold text-white">
-                {formatCurrency(despesas)}
-              </p>
-            </div>
-          </div>
-
-          {/* 🔹 Histórico */}
-          <div className="bg-gray-800 rounded-2xl p-6 shadow-lg border border-gray-700/50">
-            <h3 className="text-xl font-semibold text-white mb-5">
-              Histórico de Transações
-            </h3>
+          {/* Histórico */}
+          <motion.div
+            className="bg-gray-800/70 backdrop-blur-md rounded-2xl p-6 border border-gray-700 shadow-lg"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+          >
+            <h2 className="text-lg font-semibold text-white mb-4">Histórico de Transações</h2>
 
             {historico.length === 0 ? (
-              <div className="text-center py-10">
-                <p className="text-gray-400">
-                  Nenhuma transação registrada ainda.
-                </p>
-                <p className="text-gray-500 text-sm mt-2">
-                  Adicione despesas ou receitas para começar a acompanhar seu
-                  histórico.
-                </p>
-              </div>
+              <div className="text-center py-8 text-gray-400">Nenhuma transação registrada.</div>
             ) : (
               <div className="overflow-x-auto">
-                <table className="min-w-full text-gray-200">
-                  <thead className="bg-gray-700/50">
+                <table className="w-full table-auto text-left">
+                  <thead className="text-xs text-gray-300 uppercase">
                     <tr>
-                      <th className="py-3 px-4 text-left text-sm font-semibold text-gray-300">
-                        Tipo
-                      </th>
-                      <th className="py-3 px-4 text-left text-sm font-semibold text-gray-300">
-                        Descrição
-                      </th>
-                      <th className="py-3 px-4 text-right text-sm font-semibold text-gray-300">
-                        Valor
-                      </th>
-                      <th className="py-3 px-4 text-left text-sm font-semibold text-gray-300">
-                        Data
-                      </th>
-                      <th className="py-3 px-4 text-center"></th>
+                      <th className="py-3 px-3">Tipo</th>
+                      <th className="py-3 px-3">Descrição</th>
+                      <th className="py-3 px-3 text-right">Valor</th>
+                      <th className="py-3 px-3">Data</th>
+                      <th className="py-3 px-3 text-center">Ações</th>
                     </tr>
                   </thead>
                   <tbody>
-                    {historico.map((item) => (
-                      <tr
-                        key={item.id}
-                        className="hover:bg-gray-700/30 transition-colors duration-200"
+                    {historico.map((item, idx) => (
+                      <motion.tr
+                        key={item.id || idx}
+                        initial={{ opacity: 0, y: 6 }}
+                        animate={{ opacity: 1, y: 0 }}
+                        transition={{ delay: 0.06 * idx }}
+                        className="border-t border-gray-700 hover:bg-gray-700/20 transition-colors"
                       >
-                        <td className="py-3 px-4">
+                        <td className="py-3 px-3">
                           <span
-                            className={`px-3 py-1 text-xs font-semibold rounded-full ${
-                              item.tipo === "Receita"
-                                ? "bg-green-500/20 text-green-300"
-                                : "bg-red-500/20 text-red-300"
-                            }`}
+                            className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-semibold ${item.tipo === "Receita"
+                              ? "bg-green-500/20 text-green-300"
+                              : "bg-red-500/20 text-red-300"
+                              }`}
                           >
                             {item.tipo}
                           </span>
                         </td>
-                        <td className="py-3 px-4">{item.descricao}</td>
-                        <td
-                          className={`py-3 px-4 text-right font-semibold ${
-                            item.tipo === "Receita"
-                              ? "text-green-400"
-                              : "text-red-400"
-                          }`}
-                        >
+                        <td className="py-3 px-3 text-sm text-gray-200">{item.descricao || item.nome || "-"}</td>
+                        <td className={`py-3 px-3 text-right font-semibold ${item.tipo === "Receita" ? "text-green-400" : "text-rose-400"}`}>
                           {formatCurrency(item.valor)}
                         </td>
-                        <td className="py-3 px-4 text-gray-400 whitespace-nowrap">
-                          {formatDate(item.data)}
-                        </td>
-                        <td className="py-3 px-4 text-center flex justify-center gap-2">
-                          {/* ✏️ Botão de editar */}
-                          <button
-                            onClick={() => editarTransacao(item.id, item.tipo)}
-                            className="p-2 rounded-full hover:bg-blue-600/20 text-blue-400 hover:text-blue-500 transition-colors"
-                            title="Editar transação"
-                          >
-                            <svg
-                              xmlns="http://www.w3.org/2000/svg"
-                              className="w-4 h-4"
-                              viewBox="0 0 24 24"
-                              fill="none"
-                              stroke="currentColor"
-                              strokeWidth={2}
-                              strokeLinecap="round"
-                              strokeLinejoin="round"
+                        <td className="py-3 px-3 text-gray-400">{formatDate(item.data)}</td>
+                        <td className="py-3 px-3 text-center">
+                          <div className="inline-flex gap-2">
+                            <button
+                              onClick={() => editarTransacao(item.id, item.tipo)}
+                              className="p-2 rounded-md bg-gray-700/50 hover:bg-blue-600/30 text-blue-300 transition"
+                              title="Editar"
                             >
-                              <path d="M12 20h9" />
-                              <path d="M16.5 3.5a2.121 2.121 0 013 3L7 19l-4 1 1-4 12.5-12.5z" />
-                            </svg>
-                          </button>
-
-                          {/* 🗑️ Botão de excluir */}
-                          <button
-                            onClick={() => excluirTransacao(item.id, item.tipo)}
-                            className="p-2 rounded-full hover:bg-red-600/20 text-red-400 hover:text-red-500 transition-colors"
-                            title="Excluir transação"
-                          >
-                            <Trash2 size={18} />
-                          </button>
+                              ✏️
+                            </button>
+                            <button
+                              onClick={() => excluirTransacao(item.id, item.tipo)}
+                              className="p-2 rounded-md bg-gray-700/50 hover:bg-rose-600/30 text-rose-300 transition"
+                              title="Excluir"
+                            >
+                              <Trash2 size={16} />
+                            </button>
+                          </div>
                         </td>
-                      </tr>
+                      </motion.tr>
                     ))}
                   </tbody>
                 </table>
               </div>
             )}
-          </div>
+          </motion.div>
         </div>
       </main>
 
       <FooterPanel currentScreen="home" onNavigate={onNavigate} />
-    </div>
+    </motion.div>
   );
 }
 
 Home.propTypes = {
   onNavigate: PropTypes.func.isRequired,
+  onLogout: PropTypes.func,
 };

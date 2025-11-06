@@ -37,25 +37,29 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
     setFormData({ ...formData, [field]: e.target.value });
   };
 
-  const handleSave = async () => {
-    if (!formData.titulo || !formData.valor || !formData.vencimento) {
-      showToast(
-        "warning",
-        "Preencha Título, Valor e Vencimento antes de salvar."
-      );
-      return;
-    }
+  const validarData = (dataStr) => /^\d{4}-\d{2}-\d{2}$/.test(dataStr);
 
-    const valor = parseFloat(formData.valor) || 0;
-    const valorFinal =
-      activeTab === "despesas" ? -Math.abs(valor) : Math.abs(valor);
+  const handleSave = async () => {
+    const { titulo, descricao, valor, vencimento, categoria } = formData;
+
+    if (!titulo || !descricao || !valor || !vencimento || !categoria)
+      return showToast("warning", "Preencha todos os campos antes de salvar.");
+
+    if (!validarData(vencimento))
+      return showToast("error", "Data inválida! Escolha uma data real.");
+
+    const valorNum = parseFloat(valor);
+    if (isNaN(valorNum) || valorNum <= 0)
+      return showToast("error", "Informe um valor válido e maior que zero.");
+
+    const valorFinal = activeTab === "despesas" ? -Math.abs(valorNum) : Math.abs(valorNum);
 
     const novaTransacao = {
-      nome: formData.titulo,
-      descricao: formData.descricao,
+      nome: titulo,
+      descricao,
       valor: valorFinal,
-      data: formData.vencimento,
-      categoria: formData.categoria,
+      data: vencimento,
+      categoria,
     };
 
     try {
@@ -73,8 +77,7 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
       if (!response.ok) throw new Error(`Erro ao salvar: ${response.status}`);
 
       const saved = await response.json();
-
-      if (onAddTransaction) {
+      if (onAddTransaction)
         onAddTransaction({
           id: saved.id || Date.now(),
           descricao: saved.titulo,
@@ -82,7 +85,6 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
           data: saved.vencimento,
           tipo: saved.tipo,
         });
-      }
 
       showToast(
         "success",
@@ -97,9 +99,7 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
         categoria: "",
       });
 
-      setTimeout(() => {
-        if (onNavigate) onNavigate("home");
-      }, 1000);
+      setTimeout(() => onNavigate("home"), 1000);
     } catch (error) {
       console.error("❌ Erro ao salvar:", error);
       showToast("error", "Erro ao salvar no servidor. Verifique o console.");
@@ -114,11 +114,14 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
       vencimento: "",
       categoria: "",
     });
-    if (onNavigate) onNavigate("home");
+    onNavigate("home");
   };
 
   return (
-    <div className="min-h-screen flex flex-col bg-gradient-to-b from-gray-950 via-gray-900 to-gray-800 pb-24">
+    <div className="relative min-h-screen flex flex-col bg-gradient-to-b from-gray-950 via-gray-900 to-black pb-24 text-white overflow-hidden">
+      {/* ✨ Efeito de brilho radial */}
+      <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.08)_0%,transparent_80%)] pointer-events-none" />
+
       {toast && (
         <Toast
           type={toast.type}
@@ -127,57 +130,82 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
         />
       )}
 
-      <main className="flex-1 px-6 py-10 flex justify-center items-start">
+      <main className="flex-1 px-10 py-10 flex justify-center items-start">
         <motion.div
-          initial={{ opacity: 0, y: 30 }}
+          initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ duration: 0.6, ease: "easeOut" }}
-          className="max-w-2xl w-full bg-gray-900/70 backdrop-blur-md border border-gray-700 rounded-3xl shadow-[0_8px_40px_-15px_rgba(0,0,0,0.8)] p-10"
+          transition={{ duration: 0.5, ease: "easeOut" }}
+          className={`max-w-2xl w-full rounded-3xl shadow-[0_0_60px_rgba(99,102,241,0.2)] border ${activeTab === "despesas"
+              ? "border-red-500/30 bg-gradient-to-br from-gray-900 via-gray-850 to-red-900/20"
+              : "border-green-500/30 bg-gradient-to-br from-gray-900 via-gray-850 to-green-900/20"
+            } backdrop-blur-xl p-8`}
         >
-          {/* Tabs separadas visualmente */}
+          {/* 🏷️ Título com brilho */}
+          <motion.h2
+            className="text-5xl font-extrabold text-center mb-8 tracking-tight select-none"
+            animate={{
+              textShadow: [
+                "0 0 8px rgba(99,102,241,0.8)",
+                "0 0 18px rgba(99,102,241,1)",
+                "0 0 8px rgba(99,102,241,0.8)",
+              ],
+            }}
+            transition={{
+              duration: 2.5,
+              repeat: Infinity,
+              ease: "easeInOut",
+            }}
+            style={{
+              backgroundImage:
+                activeTab === "despesas"
+                  ? "linear-gradient(90deg, #ff5f5f, #ff9f9f, #ff5f5f)"
+                  : "linear-gradient(90deg, #22c55e, #86efac, #22c55e)",
+              backgroundClip: "text",
+              WebkitBackgroundClip: "text",
+              color: "transparent",
+              WebkitTextFillColor: "transparent",
+              filter:
+                activeTab === "despesas"
+                  ? "drop-shadow(0 0 10px rgba(239,68,68,0.4))"
+                  : "drop-shadow(0 0 10px rgba(34,197,94,0.4))",
+            }}
+          >
+            {activeTab === "despesas" ? "Nova Despesa" : "Nova Receita"}
+          </motion.h2>
+
+          {/* 🧭 Abas */}
           <div className="flex justify-center mb-10 gap-6">
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.07 }}
+              whileTap={{ scale: 0.93 }}
               onClick={() => setActiveTab("despesas")}
-              className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-base transition-all shadow-md border ${
-                {
-                  despesas:
-                    activeTab === "despesas"
-                      ? "bg-red-600 text-white border-red-500"
-                      : "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700",
-                }["despesas"]
-              }`}
+              className={`flex items-center gap-2 px-8 py-3 rounded-2xl font-semibold text-base transition-all shadow-md border ${activeTab === "despesas"
+                  ? "bg-gradient-to-r from-red-600 to-red-700 text-white border-red-400 shadow-[0_0_25px_rgba(239,68,68,0.4)]"
+                  : "bg-gray-800/70 text-gray-300 border-gray-700 hover:bg-gray-700/70"
+                }`}
             >
               <ArrowDownCircle className="w-5 h-5" />
               Despesas
             </motion.button>
 
             <motion.button
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
+              whileHover={{ scale: 1.07 }}
+              whileTap={{ scale: 0.93 }}
               onClick={() => setActiveTab("receitas")}
-              className={`flex items-center gap-2 px-6 py-3 rounded-2xl font-semibold text-base transition-all shadow-md border ${
-                {
-                  receitas:
-                    activeTab === "receitas"
-                      ? "bg-green-600 text-white border-green-500"
-                      : "bg-gray-800 text-gray-300 border-gray-700 hover:bg-gray-700",
-                }["receitas"]
-              }`}
+              className={`flex items-center gap-2 px-8 py-3 rounded-2xl font-semibold text-base transition-all shadow-md border ${activeTab === "receitas"
+                  ? "bg-gradient-to-r from-green-600 to-green-700 text-white border-green-400 shadow-[0_0_25px_rgba(34,197,94,0.4)]"
+                  : "bg-gray-800/70 text-gray-300 border-gray-700 hover:bg-gray-700/70"
+                }`}
             >
               <ArrowUpCircle className="w-5 h-5" />
               Receitas
             </motion.button>
           </div>
 
-          <h2 className="text-4xl font-bold text-white text-center mb-8 drop-shadow-md">
-            {activeTab === "despesas" ? "Nova Despesa" : "Nova Receita"}
-          </h2>
-
+          {/* 📋 Formulário */}
           <motion.div
             layout
-            className="space-y-5 bg-gray-800/60 p-8 rounded-2xl border border-gray-700 shadow-lg backdrop-blur-sm"
+            className="space-y-5 bg-gray-900/50 p-8 rounded-2xl border border-gray-800 shadow-[0_0_30px_rgba(0,0,0,0.3)]"
           >
             <InputField
               label="Título"
@@ -194,6 +222,7 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
               type="text"
               value={formData.descricao}
               onChange={handleChange("descricao")}
+              required
             />
 
             <div className="grid sm:grid-cols-2 gap-6">
@@ -221,6 +250,7 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
               type="text"
               value={formData.categoria}
               onChange={handleChange("categoria")}
+              required
             />
 
             <div className="mt-8 flex justify-center">
@@ -229,8 +259,6 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
           </motion.div>
         </motion.div>
       </main>
-
-      <FooterPanel currentScreen="despesas" onNavigate={onNavigate} />
     </div>
   );
 }

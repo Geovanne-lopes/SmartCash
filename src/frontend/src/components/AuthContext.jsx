@@ -13,14 +13,12 @@ export function AuthProvider({ children }) {
       const { user, expiresAt } = JSON.parse(storedData);
       const now = new Date().getTime();
 
-      // 🔥 Se o tempo expirou, limpa automaticamente
       if (now > expiresAt) {
         localStorage.removeItem("userSession");
         setUser(null);
       } else {
         setUser(user);
 
-        // ⏳ Agenda verificação automática pra quando expirar
         const timeout = setTimeout(() => {
           localStorage.removeItem("userSession");
           setUser(null);
@@ -32,7 +30,6 @@ export function AuthProvider({ children }) {
     }
   }, []);
 
-  // ✅ Função de login com expiração de 3 minutos
   const login = (userData) => {
     const expiresAt = new Date().getTime() + 3 * 60 * 1000; // 3 minutos
     const sessionData = { user: userData, expiresAt };
@@ -41,7 +38,6 @@ export function AuthProvider({ children }) {
     setUser(userData);
   };
 
-  // ✅ Função de logout manual
   const logout = () => {
     localStorage.removeItem("userSession");
     setUser(null);
@@ -53,7 +49,6 @@ export function AuthProvider({ children }) {
     </AuthContext.Provider>
   );
 }
-
 
 AuthProvider.propTypes = {
   children: PropTypes.node.isRequired,

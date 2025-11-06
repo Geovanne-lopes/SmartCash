@@ -2,7 +2,6 @@ import "./App.css";
 import { useState, useEffect } from "react";
 import Smc from "./assets/smcash.svg";
 
-// 🧩 Telas do sistema
 import EditarPerfil from "./components/EditarPerfil";
 import Despesas from "./components/Transacoes";
 import Home from "./components/Home";
@@ -16,7 +15,6 @@ export default function App() {
   const [addTransactionCallback, setAddTransactionCallback] = useState(null);
   const [transacaoSelecionada, setTransacaoSelecionada] = useState(null);
 
-  // 🕒 Verifica sessão com expiração de 3 minutos
   useEffect(() => {
     const storedSession = localStorage.getItem("userSession");
 
@@ -35,13 +33,11 @@ export default function App() {
     }
   }, []);
 
-  // 🔹 Navegação entre telas
   const handleNavigate = (screen, data = null) => {
     if (data) setTransacaoSelecionada(data);
     setCurrentScreen(screen);
   };
 
-  // 🔹 Callback para adicionar transações
   const handleAddTransaction = (transacao) => {
     if (addTransactionCallback) addTransactionCallback(transacao);
   };
@@ -50,25 +46,24 @@ export default function App() {
     setAddTransactionCallback(() => callback);
   };
 
-  // 🔐 Login com expiração automática
-  const handleLoginSuccess = (nome) => {
-    const expiresAt = new Date().getTime() + 3 * 60 * 1000; // 3 minutos
-    const user = { nome };
+  const handleLoginSuccess = (userData) => {
+    const expiresAt = new Date().getTime() + 3 * 60 * 1000;
 
-    localStorage.setItem("userSession", JSON.stringify({ user, expiresAt }));
+    localStorage.setItem(
+      "userSession",
+      JSON.stringify({ user: userData, expiresAt })
+    );
 
-    setUserName(nome);
+    setUserName(userData.nome);
     setCurrentScreen("home");
   };
 
-  // 🚪 Logout manual
   const handleLogout = () => {
     localStorage.removeItem("userSession");
     setUserName("");
     setCurrentScreen("initial");
   };
 
-  // 🔹 Renderização condicional
   if (currentScreen === "home") {
     return (
       <Home
@@ -113,17 +108,12 @@ export default function App() {
     return <ErrorScreen onNavigate={handleNavigate} />;
   }
 
-  // 🌌 Tela inicial (Login animado)
   if (currentScreen === "initial") {
     return (
-      <LoginScreen
-        onLogin={handleLoginSuccess}
-        onNavigate={handleNavigate}
-      />
+      <LoginScreen onLogin={handleLoginSuccess} onNavigate={handleNavigate} />
     );
   }
 
-  // 🔁 Fallback visual
   return (
     <div className="flex items-center justify-center min-h-screen bg-gray-900 text-white">
       <div className="text-center">

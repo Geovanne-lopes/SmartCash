@@ -20,7 +20,6 @@ export default function EditarPerfil({
   const [toast, setToast] = useState(null);
   const [isSaving, setIsSaving] = useState(false);
 
-  // ✅ Validação em tempo real
   const validateField = (field, value) => {
     let message = "";
     if (field === "nome" && !value.trim()) message = "O nome é obrigatório.";
@@ -43,7 +42,6 @@ export default function EditarPerfil({
     setTimeout(() => setToast(null), 3000);
   };
 
-  // 💾 Salvar perfil
   const handleSave = async () => {
     const hasError = Object.values(errors).some((err) => err);
     const isAllEmpty = !formData.nome && !formData.email && !formData.senha;
@@ -55,7 +53,8 @@ export default function EditarPerfil({
 
     setIsSaving(true);
     try {
-      const usuarioId = JSON.parse(localStorage.getItem("user"))?.id || 1;
+      const storedSession = JSON.parse(localStorage.getItem("userSession"));
+      const usuarioId = storedSession?.user?.id;
 
       const response = await fetch(
         `http://localhost:8080/api/usuarios/${usuarioId}`,
@@ -98,10 +97,8 @@ export default function EditarPerfil({
       animate={{ opacity: 1 }}
       transition={{ duration: 0.5, ease: "easeOut" }}
     >
-      {/* 🌌 Glow radial de fundo */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.08)_0%,transparent_80%)] pointer-events-none" />
 
-      {/* 🔔 Toast */}
       <AnimatePresence>
         {toast && (
           <motion.div
@@ -132,7 +129,6 @@ export default function EditarPerfil({
           transition={{ duration: 0.6 }}
           className="max-w-xl w-full bg-gray-900/70 backdrop-blur-xl border border-indigo-500/20 rounded-3xl shadow-[0_0_50px_rgba(99,102,241,0.2)] p-10"
         >
-          {/* 🧑 Header */}
           <div className="flex flex-col items-center text-center mb-8">
             <motion.div
               className="bg-gray-800/60 p-4 rounded-full mb-4 border border-indigo-500/30 shadow-[0_0_25px_rgba(99,102,241,0.3)]"
@@ -149,7 +145,6 @@ export default function EditarPerfil({
               <User size={42} className="text-indigo-400" />
             </motion.div>
 
-            {/* ✨ Título com brilho */}
             <motion.h2
               className="text-4xl font-extrabold mb-2 select-none"
               animate={{
@@ -178,7 +173,6 @@ export default function EditarPerfil({
             </p>
           </div>
 
-          {/* 🧾 Form */}
           <motion.div
             layout
             className="space-y-5 bg-gray-800/60 p-8 rounded-2xl border border-gray-700/60 shadow-[inset_0_0_20px_rgba(0,0,0,0.3)]"

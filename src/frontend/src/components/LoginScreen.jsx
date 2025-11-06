@@ -26,7 +26,6 @@ export default function LoginScreen({ onLogin }) {
     }
   }, []);
 
-  // 🔐 LOGIN
   const handleLogin = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -52,7 +51,7 @@ export default function LoginScreen({ onLogin }) {
         })
       );
 
-      onLogin(data.nome || email);
+      onLogin({ id: data.id, nome: data.nome, email: data.email });
     } catch (err) {
       console.error("Erro no login:", err);
       showToast(err.message || "Falha ao fazer login.");
@@ -61,7 +60,6 @@ export default function LoginScreen({ onLogin }) {
     }
   };
 
-  // 🧩 CADASTRO
   const handleSignup = async (e) => {
     e.preventDefault();
     setLoading(true);
@@ -89,7 +87,6 @@ export default function LoginScreen({ onLogin }) {
 
       showToast("Conta criada com sucesso! Faça login.", "success");
 
-      // Volta automaticamente para tela de login
       setTimeout(() => setIsLogin(true), 2000);
     } catch (err) {
       console.error("Erro no cadastro:", err);
@@ -109,7 +106,6 @@ export default function LoginScreen({ onLogin }) {
       className="relative flex items-center justify-start min-h-screen overflow-hidden 
       bg-[radial-gradient(circle_at_30%_20%,#0f172a_0%,#020617_70%)] text-white"
     >
-      {/* 🌠 Fundo de estrelas */}
       <div className="absolute inset-0 overflow-hidden z-0">
         {[...Array(40)].map((_, i) => (
           <motion.div
@@ -132,7 +128,6 @@ export default function LoginScreen({ onLogin }) {
         ))}
       </div>
 
-      {/* ✴️ Estrelas com parallax */}
       <motion.div
         animate={{ x: parallax.x * 0.6, y: parallax.y * 0.6 }}
         transition={{ type: "spring", stiffness: 25, damping: 10 }}
@@ -148,7 +143,6 @@ export default function LoginScreen({ onLogin }) {
         <Star size={40} />
       </motion.div>
 
-      {/* 🚀 Logo + animação */}
       <motion.div
         animate={{ x: parallax.x * 1.2, y: parallax.y * 1.2 }}
         transition={{ type: "spring", stiffness: 30, damping: 15 }}
@@ -214,7 +208,6 @@ export default function LoginScreen({ onLogin }) {
         </motion.div>
       </motion.div>
 
-      {/* 💳 Card Login/Cadastro */}
       <motion.div
         initial={{ opacity: 0, x: -25 }}
         animate={{ opacity: 1, x: 0 }}
@@ -236,7 +229,6 @@ export default function LoginScreen({ onLogin }) {
 
         <AnimatePresence mode="wait">
           {isLogin ? (
-            // 🔐 LOGIN
             <motion.form
               key="login"
               onSubmit={handleLogin}
@@ -302,7 +294,6 @@ export default function LoginScreen({ onLogin }) {
               </p>
             </motion.form>
           ) : (
-            // 🧠 CADASTRO
             <motion.form
               key="signup"
               onSubmit={handleSignup}
@@ -385,7 +376,6 @@ export default function LoginScreen({ onLogin }) {
         </AnimatePresence>
       </motion.div>
 
-      {/* ✅ Toast global - fora da caixa */}
       <AnimatePresence>
         {toast && (
           <motion.div

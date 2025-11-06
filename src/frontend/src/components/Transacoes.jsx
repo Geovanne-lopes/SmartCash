@@ -1,6 +1,5 @@
 import { useState, useEffect } from "react";
 import PropTypes from "prop-types";
-import FooterPanel from "./FooterPanel";
 import InputField from "./InputField";
 import SaveCancelButtons from "./SaveCancelButtons";
 import Toast from "./Toast";
@@ -52,7 +51,8 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
     if (isNaN(valorNum) || valorNum <= 0)
       return showToast("error", "Informe um valor válido e maior que zero.");
 
-    const valorFinal = activeTab === "despesas" ? -Math.abs(valorNum) : Math.abs(valorNum);
+    const valorFinal =
+      activeTab === "despesas" ? -Math.abs(valorNum) : Math.abs(valorNum);
 
     const novaTransacao = {
       nome: titulo,
@@ -119,7 +119,6 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
 
   return (
     <div className="relative min-h-screen flex flex-col bg-gradient-to-b from-gray-950 via-gray-900 to-black pb-24 text-white overflow-hidden">
-      {/* ✨ Efeito de brilho radial */}
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,rgba(99,102,241,0.08)_0%,transparent_80%)] pointer-events-none" />
 
       {toast && (
@@ -135,12 +134,12 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
           initial={{ opacity: 0, y: 25 }}
           animate={{ opacity: 1, y: 0 }}
           transition={{ duration: 0.5, ease: "easeOut" }}
-          className={`max-w-2xl w-full rounded-3xl shadow-[0_0_60px_rgba(99,102,241,0.2)] border ${activeTab === "despesas"
+          className={`max-w-2xl w-full rounded-3xl shadow-[0_0_60px_rgba(99,102,241,0.2)] border ${
+            activeTab === "despesas"
               ? "border-red-500/30 bg-gradient-to-br from-gray-900 via-gray-850 to-red-900/20"
               : "border-green-500/30 bg-gradient-to-br from-gray-900 via-gray-850 to-green-900/20"
-            } backdrop-blur-xl p-8`}
+          } backdrop-blur-xl p-8`}
         >
-          {/* 🏷️ Título com brilho */}
           <motion.h2
             className="text-5xl font-extrabold text-center mb-8 tracking-tight select-none"
             animate={{
@@ -173,16 +172,16 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
             {activeTab === "despesas" ? "Nova Despesa" : "Nova Receita"}
           </motion.h2>
 
-          {/* 🧭 Abas */}
           <div className="flex justify-center mb-10 gap-6">
             <motion.button
               whileHover={{ scale: 1.07 }}
               whileTap={{ scale: 0.93 }}
               onClick={() => setActiveTab("despesas")}
-              className={`flex items-center gap-2 px-8 py-3 rounded-2xl font-semibold text-base transition-all shadow-md border ${activeTab === "despesas"
+              className={`flex items-center gap-2 px-8 py-3 rounded-2xl font-semibold text-base transition-all shadow-md border ${
+                activeTab === "despesas"
                   ? "bg-gradient-to-r from-red-600 to-red-700 text-white border-red-400 shadow-[0_0_25px_rgba(239,68,68,0.4)]"
                   : "bg-gray-800/70 text-gray-300 border-gray-700 hover:bg-gray-700/70"
-                }`}
+              }`}
             >
               <ArrowDownCircle className="w-5 h-5" />
               Despesas
@@ -192,17 +191,17 @@ export default function Despesas({ onNavigate, onAddTransaction }) {
               whileHover={{ scale: 1.07 }}
               whileTap={{ scale: 0.93 }}
               onClick={() => setActiveTab("receitas")}
-              className={`flex items-center gap-2 px-8 py-3 rounded-2xl font-semibold text-base transition-all shadow-md border ${activeTab === "receitas"
+              className={`flex items-center gap-2 px-8 py-3 rounded-2xl font-semibold text-base transition-all shadow-md border ${
+                activeTab === "receitas"
                   ? "bg-gradient-to-r from-green-600 to-green-700 text-white border-green-400 shadow-[0_0_25px_rgba(34,197,94,0.4)]"
                   : "bg-gray-800/70 text-gray-300 border-gray-700 hover:bg-gray-700/70"
-                }`}
+              }`}
             >
               <ArrowUpCircle className="w-5 h-5" />
               Receitas
             </motion.button>
           </div>
 
-          {/* 📋 Formulário */}
           <motion.div
             layout
             className="space-y-5 bg-gray-900/50 p-8 rounded-2xl border border-gray-800 shadow-[0_0_30px_rgba(0,0,0,0.3)]"

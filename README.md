@@ -1,6 +1,6 @@
 # 💸 SmartCash
 
-**SmartCash** é uma plataforma financeira inteligente desenvolvida para facilitar o controle de receitas, despesas e informações pessoais do usuário.  
+**SmartCash** é uma plataforma financeira inteligente desenvolvida em grupo para facilitar o controle de receitas, despesas e informações pessoais do usuário, como trabalho de conclusão de fase da FIAP.  
 O projeto integra **Java (Spring Boot)** no backend, **ReactJS** no frontend e o banco de dados **Oracle Cloud da FIAP**.
 
 ---
